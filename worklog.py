@@ -33,6 +33,7 @@ class TaskLog(Prompt):
                 break
 
 
-program = TaskLog()
-program.welcome()
-program.main()
+if __name__ == '__main__':
+    program = TaskLog()
+    program.welcome()
+    program.main()

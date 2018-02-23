@@ -1,6 +1,7 @@
 import csv
 import datetime
 import re
+import os.path
 
 from prompt import Prompt
 
@@ -139,18 +140,23 @@ class Search(Prompt):
             except ValueError:
                 print('That does not seem to be a valid date. Try again.')
             else:
-                with open('logfile.csv') as csvfile:
-                    reader = csv.DictReader(csvfile)
-                    result_count = 0
-                    result_list = []
-                    for index, row in enumerate(reader):
-                        if requested_date == datetime.datetime.strptime(row['Date'], "%d/%m/%Y").date():
-                            result_count += 1
-                            result_list.append([index, row['Date'], row['Task Name'], row['Time Spent'], row['Notes']])
-                        else:
-                            print("No entries found for that date! :( ")
-                if result_list:
-                    self.display_result(result_list=result_list)
+                file_exists = os.path.isfile('logfile.csv')
+                if not file_exists:
+                    print("File could not be found. You may to create an entry first.")
+                    break
+                else:
+                    with open('logfile.csv') as csvfile:
+                        reader = csv.DictReader(csvfile)
+                        result_count = 0
+                        result_list = []
+                        for index, row in enumerate(reader):
+                            if requested_date == datetime.datetime.strptime(row['Date'], "%d/%m/%Y").date():
+                                result_count += 1
+                                result_list.append([index, row['Date'], row['Task Name'], row['Time Spent'], row['Notes']])
+                            else:
+                                print("No entries found for that date! :( ")
+                    if result_list:
+                        self.display_result(result_list=result_list)
             break
 
     def search_by_range_of_dates(self, **kwargs):
@@ -184,23 +190,28 @@ class Search(Prompt):
             else:
                 self.starting_date = kwargs['starting_date']
                 self.ending_date = kwargs['ending_date']
-            with open('logfile.csv') as csvfile:
-                reader = csv.DictReader(csvfile)
-                result_count = 0
-                result_list = []
-                for index, row in enumerate(reader):
-                    row_date = datetime.datetime.strptime(row['Date'], "%d/%m/%Y").date()
-                    if self.starting_date <= row_date <= self.ending_date:
-                        result_count += 1
-                        result_list.append([index, row['Date'], row['Task Name'], row['Time Spent'], row['Notes']])
-                if result_list:
-                    self.display_result(
-                        result_list=result_list,
-                        starting_date=self.starting_date,
-                        ending_date=self.ending_date
-                    )
-                else:
-                    print("No entries found for that date range! :( ")
+            file_exists = os.path.isfile('logfile.csv')
+            if not file_exists:
+                print("File could not be found. You may to create an entry first.")
+                break
+            else:
+                with open('logfile.csv') as csvfile:
+                        reader = csv.DictReader(csvfile)
+                        result_count = 0
+                        result_list = []
+                        for index, row in enumerate(reader):
+                            row_date = datetime.datetime.strptime(row['Date'], "%d/%m/%Y").date()
+                            if self.starting_date <= row_date <= self.ending_date:
+                                result_count += 1
+                                result_list.append([index, row['Date'], row['Task Name'], row['Time Spent'], row['Notes']])
+                        if result_list:
+                            self.display_result(
+                                result_list=result_list,
+                                starting_date=self.starting_date,
+                                ending_date=self.ending_date
+                            )
+                        else:
+                            print("No entries found for that date range! :( ")
             break
 
     def search_by_exact_search(self, **kwargs):
@@ -215,23 +226,28 @@ class Search(Prompt):
                     break
             else:
                 self.exact_search_query = kwargs['exact_search_query']
-            with open('logfile.csv') as csvfile:
-                reader = csv.DictReader(csvfile)
-                result_count = 0
-                result_list = []
-                for index, row in enumerate(reader):
-                    task_name = row['Task Name']
-                    task_notes = row['Notes']
-                    if self.exact_search_query == task_name or self.exact_search_query == task_notes:
-                        result_count += 1
-                        result_list.append([index, row['Date'], row['Task Name'], row['Time Spent'], row['Notes']])
-                if result_list:
-                    self.display_result(
-                        result_list=result_list,
-                        exact_search_query=self.exact_search_query
-                    )
-                else:
-                    print("No entries found for that search query! :( ")
+            file_exists = os.path.isfile('logfile.csv')
+            if not file_exists:
+                print("File could not be found. You may to create an entry first.")
+                break
+            else:
+                with open('logfile.csv') as csvfile:
+                        reader = csv.DictReader(csvfile)
+                        result_count = 0
+                        result_list = []
+                        for index, row in enumerate(reader):
+                            task_name = row['Task Name']
+                            task_notes = row['Notes']
+                            if self.exact_search_query == task_name or self.exact_search_query == task_notes:
+                                result_count += 1
+                                result_list.append([index, row['Date'], row['Task Name'], row['Time Spent'], row['Notes']])
+                        if result_list:
+                            self.display_result(
+                                result_list=result_list,
+                                exact_search_query=self.exact_search_query
+                            )
+                        else:
+                            print("No entries found for that search query! :( ")
             break
 
     def search_by_regex_pattern(self, **kwargs):
@@ -246,26 +262,31 @@ class Search(Prompt):
                     break
             else:
                 self.regex_pattern = kwargs['regex_pattern']
-            with open('logfile.csv') as csvfile:
-                reader = csv.DictReader(csvfile)
-                result_count = 0
-                result_list = []
-                for index, row in enumerate(reader):
-                    task_name = row['Task Name']
-                    task_notes = row['Notes']
-                    if (
-                            re.search(r"{}".format(self.regex_pattern), task_name) or
-                            re.search(r"{}".format(self.regex_pattern), task_notes)
-                    ):
-                        result_count += 1
-                        result_list.append([index, row['Date'], row['Task Name'], row['Time Spent'], row['Notes']])
-                if result_list:
-                    self.display_result(
-                        result_list=result_list,
-                        regex_pattern=self.regex_pattern
-                    )
-                else:
-                    print("No entries found for that pattern :( ")
+            file_exists = os.path.isfile('logfile.csv')
+            if not file_exists:
+                print("File could not be found. You may to create an entry first.")
+                break
+            else:
+                with open('logfile.csv') as csvfile:
+                    reader = csv.DictReader(csvfile)
+                    result_count = 0
+                    result_list = []
+                    for index, row in enumerate(reader):
+                        task_name = row['Task Name']
+                        task_notes = row['Notes']
+                        if (
+                                re.search(r"{}".format(self.regex_pattern), task_name) or
+                                re.search(r"{}".format(self.regex_pattern), task_notes)
+                        ):
+                            result_count += 1
+                            result_list.append([index, row['Date'], row['Task Name'], row['Time Spent'], row['Notes']])
+                    if result_list:
+                        self.display_result(
+                            result_list=result_list,
+                            regex_pattern=self.regex_pattern
+                        )
+                    else:
+                        print("No entries found for that pattern :( ")
             break
         pass
 
